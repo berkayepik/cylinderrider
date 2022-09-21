@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+	
+	public static PlayerController Current;
+	
 	//Karakterin koşma hızı
 	public float runningSpeed;
 	private float _currentRunningSpeed;
@@ -13,10 +16,16 @@ public class PlayerController : MonoBehaviour
 	//Karakterin sağ sola ne kadar hızla gideceğini tutacak
 	public float xSpeed;
 	
+	public GameObject ridingCylinderPrefab;
+	
+	public List<RidingCylinder> cylinders;
+	
     // Start is called before the first frame update
     void Start()
     {
         _currentRunningSpeed = runningSpeed;
+		
+		Current = this;
     }
 
     // Update is called once per frame
@@ -56,7 +65,7 @@ public class PlayerController : MonoBehaviour
 		if(other.tag == "AddCylinder")
 		{
 			
-			IncrementCylinderVolume(0.2f);
+			IncrementCylinderVolume(0.1f);
 			Destroy(other.gameObject);
 		}
 	}
@@ -64,6 +73,37 @@ public class PlayerController : MonoBehaviour
 	//Silindir hacmi büyütme
 	public void IncrementCylinderVolume(float value)
 	{
-		
+		//Hiç silindir yoksa silindir yarat
+		if(cylinders.Count == 0)
+		{
+			//Yük alıyorsak
+			if(value > 0)
+			{
+				CreateCylinder(value);
+			}
+			else
+			{
+				//gameover
+			}
+		}
+		//Altımızda silindir varsa en alttakinin boyutunu güncelleyecez
+		else
+		{
+			cylinders[cylinders.Count - 1].CylinderController(value);
+		}
+	}
+	
+	
+	public void CreateCylinder(float value)
+	{
+		RidingCylinder createdCylinder = Instantiate(ridingCylinderPrefab, transform).GetComponent<RidingCylinder>();
+		cylinders.Add(createdCylinder);
+		createdCylinder.CylinderController(value);
+	}
+	
+	public void DestroyCylinder(RidingCylinder cylinder)
+	{
+		cylinders.Remove(cylinder);
+		Destroy(cylinder.gameObject);
 	}
 }
